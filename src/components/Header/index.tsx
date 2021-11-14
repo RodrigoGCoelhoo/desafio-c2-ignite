@@ -8,15 +8,7 @@ import { useCart } from '../../hooks/useCart';
 
 const Header = (): JSX.Element => {
   const { cart } = useCart();
-  const [cartSize, setCartSize] = useState(0)
-
-  useEffect(() => {
-    let cartSizeTemp = cart.reduce((sum, product) => {
-      sum.total += 1
-      return sum
-    }, {total: 0})
-    setCartSize(cartSizeTemp.total)
-  }, [cart])
+  const cartSize = cart.length
 
   return (
     <Container>

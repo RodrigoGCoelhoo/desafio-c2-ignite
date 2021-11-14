@@ -25,62 +25,55 @@ interface CartItemsAmount {
 const Home = (): JSX.Element => {
   const [products, setProducts] = useState<ProductFormatted[]>([]);
   const { addProduct, cart } = useCart();
-  const [cartItemsAmount, setCartItemsAmount] = useState<CartItemsAmount>({})
 
-  useEffect(() => {
-    const cartItemsAmountTemp:CartItemsAmount = cart.reduce((sumAmount, product) => {
-      sumAmount[product.id] = product.amount
-      return sumAmount
-    }, {} as CartItemsAmount)
-    setCartItemsAmount(cartItemsAmountTemp)
-  }, [])
+  const cartItemsAmount = cart.reduce((sumAmount, product) => {
+    const newSumAmount = {...sumAmount}
+    newSumAmount[product.id] = product.amount
+    return newSumAmount
+  }, {} as CartItemsAmount)
 
   useEffect(() => {
     async function loadProducts() {
-      await api.get("/products")
+      await api.get<Product[]>("/products")
         .then(response => {
           const newProducts = response.data.map((product: Product) => {
-          const { id, title, price, image } = product
-          const newPriceFormatted = formatPrice(product.price)
-          const newProduct = { id, title, price, image, priceFormatted: newPriceFormatted }
-          return newProduct
+            const { id, title, price, image } = product
+            const newPriceFormatted = formatPrice(product.price)
+            const newProduct = { id, title, price, image, priceFormatted: newPriceFormatted }
+            return newProduct
+          })
+          setProducts(newProducts)
         })
-        setProducts(newProducts)
-      })
     }
     loadProducts();
   }, []);
 
   async function handleAddProduct(id: number) {
     await addProduct(id)
-    const cartItemsAmountTemp:CartItemsAmount = cart.reduce((sumAmount, product) => {
-      sumAmount[product.id] = product.amount
-      return sumAmount
-    }, {} as CartItemsAmount)
-    setCartItemsAmount(cartItemsAmountTemp)
   }
 
   return (
     <ProductList>
       {products.map(product => {
         return (
-        <li key={product.id}>
-          <img src={product.image} alt={product.title} />
-          <strong>{product.title}</strong>
-          <span>{product.priceFormatted}</span>
-          <button
-            type="button"
-            data-testid="add-product-button"
-            onClick={() => handleAddProduct(product.id)}
-          >
-            <div data-testid="cart-product-quantity">
-              <MdAddShoppingCart size={16} color="#FFF" />
-              {cartItemsAmount[product.id] || 0}
-            </div>
-            <span>ADICIONAR AO CARRINHO</span>
-          </button>
-        </li>
-        )}
+          <li key={product.id}>
+            <img src={product.image} alt={product.title} />
+            <strong>{product.title}</strong>
+            <span>{product.priceFormatted}</span>
+            <button
+              type="button"
+              data-testid="add-product-button"
+              onClick={() => handleAddProduct(product.id)}
+            >
+              <div data-testid="cart-product-quantity">
+                <MdAddShoppingCart size={16} color="#FFF" />
+                {cartItemsAmount[product.id] || 0}
+              </div>
+              <span>ADICIONAR AO CARRINHO</span>
+            </button>
+          </li>
+        )
+      }
       )}
     </ProductList>
   );
